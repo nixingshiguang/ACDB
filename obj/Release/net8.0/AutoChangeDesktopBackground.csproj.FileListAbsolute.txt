@@ -26,3 +26,4 @@ C:\Users\nixin\Documents\GitHub\ACDB\obj\Release\net8.0\refint\AutoChangeDesktop
 C:\Users\nixin\Documents\GitHub\ACDB\obj\Release\net8.0\AutoChangeDesktopBackground.pdb
 C:\Users\nixin\Documents\GitHub\ACDB\obj\Release\net8.0\AutoChangeDesktopBackground.genruntimeconfig.cache
 C:\Users\nixin\Documents\GitHub\ACDB\obj\Release\net8.0\ref\AutoChangeDesktopBackground.dll
+C:\Users\nixin\Documents\GitHub\ACDB\obj\Release\net8.0\AutoChangeDesktopBackground.sourcelink.json

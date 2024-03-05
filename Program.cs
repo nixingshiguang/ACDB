@@ -56,6 +56,9 @@ class Program
                 string imageName = Path.Combine(pictureFolderPath, $"image_{randomNumber}.jpg");
                 webClient.DownloadFile(imageUrl, imageName);
 
+                // 等待10秒
+                Thread.Sleep(10000);
+
                 // 设置桌面背景
                 SystemParametersInfo(0x0014, 0, imageName, 1);
 
@@ -65,8 +68,8 @@ class Program
                 // 删除旧图片
                 File.Delete(imageName);
 
-                // 等待20秒
-                Thread.Sleep(20000);
+                // 等待10秒
+                Thread.Sleep(10000);
             };
         }
     }
