@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AutoChangeDesktopBackground")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e30fc46a88b7c91b34ce5af3fe69fcfb595dc2c9")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c65827ba7dbcfaccb72a9a8c9f1287d7ad072dad")]
 [assembly: System.Reflection.AssemblyProductAttribute("AutoChangeDesktopBackground")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AutoChangeDesktopBackground")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -41,15 +41,13 @@ class Program
         // 不断循环，每30秒下载并更换一次壁纸
         while (true)
         {
-            // 生成随机数用于获取不同的图片
-            Random random = new Random();
-            int randomNumber = random.Next(1000, 9999);
-            string imageUrl = "https://imgapi.160621.xyz/random.php?random=" + randomNumber;
+            string imageUrl = "https://imgapi.160621.xyz/random.php";
 
             // 使用HttpClient下载图片
             using (HttpClient httpClient = new HttpClient())
             {
-                string imageName = Path.Combine(pictureFolderPath, $"image_{randomNumber}.webp");
+                string imageName = Path.Combine(pictureFolderPath, "image.webp");
+
                 HttpResponseMessage response = await httpClient.GetAsync(imageUrl);
 
                 // 如果下载成功，则设置为桌面壁纸
@@ -61,16 +59,13 @@ class Program
                     }
 
                     // 等待一段时间，让桌面壁纸显示出来
-                    await Task.Delay(20000); 
+                    await Task.Delay(20000);
 
                     // 设置桌面壁纸
-                    SystemParametersInfo(0x0014, 0, imageName, 1);
+                    SystemParametersInfo(0x0014, 0, imageName, 0x01 | 0x02);
 
                     // 等待一段时间，确保壁纸设置完成
-                    await Task.Delay(10000); 
-
-                    // 删除已设置为壁纸的图片，准备下一次更换
-                    File.Delete(imageName); 
+                    await Task.Delay(10000);
                 }
             }
         }
