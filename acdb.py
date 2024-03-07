@@ -1,8 +1,10 @@
+import tkinter as tk
+from tkinter import messagebox
 import os
 import requests
 import ctypes
 import time
-import schedule
+import threading
 
 def set_wallpaper(image_path):
     """
@@ -20,51 +22,87 @@ def set_wallpaper(image_path):
 
 def download_image(url):
     """
-    从指定的URL下载图像并将其设置为桌面壁纸。
+    从指定的URL下载图像并设置为桌面壁纸。
     
     参数:
-    url: 图像的URL地址。
+    url: str - 图像的URL地址。
     
     返回值:
     无
     """
-    # 设置请求头
+    # 设置请求头，伪装为浏览器访问
     headers = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
-}
-    # 发起HTTP请求获取图像
-    response = requests.get(url,headers=headers)
-    # 确保响应成功
-    if response.status_code== 200:
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
+    }
+    # 发送GET请求获取图像
+    response = requests.get(url, headers=headers)
+    
+    # 检查请求是否成功
+    if response.status_code == 200:
+        # 以二进制方式写入图像数据到本地文件
         with open("image.webp", "wb") as f:
             f.write(response.content)
         print("Image downloaded successfully!")
     else:
+        # 请求失败，打印状态码
         print("Failed to download image. Status code:", response.status_code)
 
-    # 拼接图像的保存路径（当前工作目录下的'image.webp'）
+    # 获取图像文件的完整路径
     image_path = os.path.join(os.getcwd(), 'image.webp')
-
-    # 等待20秒，确保桌面壁下载完成
-    time.sleep(20)
-
-    # 设置保存的图像为桌面壁纸
+    # 暂停2秒，确保图像文件写入完成
+    time.sleep(2)
+    # 设置图像为桌面壁纸
     set_wallpaper(image_path)
 
-def main():
+def on_submit():
     """
-    主函数，用于演示从指定网址下载图片的功能。
+    处理提交操作，根据输入的URL和间隔时间，启动一个新线程定期更改桌面壁纸。
     
-    参数: 
-    无
-    
-    返回值:
-    无
+    无参数
+    无返回值
     """
-    url = 'https://imgapi.160621.xyz/random.php'  # 指定图片下载的URL
-    download_image(url)  # 调用函数下载图片
+    # 获取用户输入的URL和间隔时间
+    url = url_entry.get()
+    interval = int(interval_entry.get())
+    
+    def wallpaper_changer():
+        """
+        在一个独立的线程中，周期性地从指定URL下载图片并设置为桌面壁纸。
+        
+        无参数
+        无返回值
+        """
+        while True:  # 不断循环，定期执行下载和设置壁纸的操作
+            download_image(url)  # 下载图片
+            time.sleep(interval)  # 按照设定间隔休眠，单位为秒
+    
+    # 创建一个新线程并启动，目标函数为wallpaper_changer
+    thread = threading.Thread(target=wallpaper_changer)
+    thread.start()
 
-# 循环执行任务
-while True:
-    main()
-    time.sleep(10)
+# 创建GUI界面
+root = tk.Tk()
+# 标题
+root.title("ACDB 壁纸自动更换器")
+
+# 图片API_url标签
+url_label = tk.Label(root, text="图片API_URL:")
+url_label.pack()  # 将标签添加到根窗口
+url_entry = tk.Entry(root, width=50) # 创建输入框，设置宽度为50字符
+url_entry.pack()  # 将输入框添加到根窗口
+
+# 时间间隔标签
+interval_label = tk.Label(root, text="壁纸切换间隔 (seconds):")
+interval_label.pack()
+interval_entry = tk.Entry(root)
+interval_entry.pack()
+
+# 确认按钮
+submit_button = tk.Button(root, text="确认", command=on_submit)
+submit_button.pack()
+
+# 运行根窗口的事件循环
+#
+# 该函数没有参数。
+# 也没有返回值，因为它会一直运行，直到窗口被关闭或程序终止。
+root.mainloop()
