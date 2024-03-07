@@ -19,6 +19,13 @@ ACDB——Automatic Change Desktop Background，即自动更换电脑桌面壁�
 3. （可选）输入切换壁纸时间间隔
 4. 确认
 
+## 自行编译
+1. 安装Python
+2. 安装依赖库：`pip install -r requirements.txt`
+3. 编译：
+   + 带控制台输出版本：`pyinstaller --onefile -n acdb acdb.py`
+   + 后台运行版本：`pyinstaller --noconsole --onefile -n acdb_no_console acdb.py`
+
 ## 注意事项
 1. 关闭交互窗口不会影响程序运行
 2. 切换壁纸时可能会有黑屏，是正常现象，因为没有做过渡处理，暂时没能力解决这问题

@@ -1,0 +1,4 @@
+# 用于发送请求的库
+requests
+# 用于编译单文件可执行程序的库
+pyinstaller
