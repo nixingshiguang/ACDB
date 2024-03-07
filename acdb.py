@@ -20,6 +20,8 @@ def set_wallpaper(image_path):
     # 使用ctypes调用Windows API来设置桌面壁纸
     ctypes.windll.user32.SystemParametersInfoW(SPI_SETDESKWALLPAPER, 0, image_path, 3)
 
+# 计数
+count = 1
 def download_image(url):
     """
     从指定的URL下载图像并设置为桌面壁纸。
@@ -30,6 +32,9 @@ def download_image(url):
     返回值:
     无
     """
+    global count  # 声明count为全局变量
+    print(f"第{count}次切换壁纸...")
+    
     # 设置请求头，伪装为浏览器访问
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
@@ -42,10 +47,10 @@ def download_image(url):
         # 以二进制方式写入图像数据到本地文件
         with open("image.webp", "wb") as f:
             f.write(response.content)
-        print("Image downloaded successfully!")
+        print("下载图片成功！")
     else:
         # 请求失败，打印状态码
-        print("Failed to download image. Status code:", response.status_code)
+        print("下载图片失败，状态码:", response.status_code)
 
     # 获取图像文件的完整路径
     image_path = os.path.join(os.getcwd(), 'image.webp')
@@ -53,6 +58,8 @@ def download_image(url):
     time.sleep(2)
     # 设置图像为桌面壁纸
     set_wallpaper(image_path)
+    print("切换壁纸成功！")
+    count += 1
 
 def on_submit():
     """
@@ -89,12 +96,14 @@ root.title("ACDB 壁纸自动更换器")
 url_label = tk.Label(root, text="图片API_URL:")
 url_label.pack()  # 将标签添加到根窗口
 url_entry = tk.Entry(root, width=50) # 创建输入框，设置宽度为50字符
+url_entry.insert(0, "https://imgapi.160621.xyz/random.php")
 url_entry.pack()  # 将输入框添加到根窗口
 
 # 时间间隔标签
-interval_label = tk.Label(root, text="壁纸切换间隔 (seconds):")
+interval_label = tk.Label(root, text="壁纸切换间隔 (秒):")
 interval_label.pack()
 interval_entry = tk.Entry(root)
+interval_entry.insert(0, "30")
 interval_entry.pack()
 
 # 确认按钮
