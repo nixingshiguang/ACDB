@@ -2,3 +2,5 @@
 requests
 # 用于编译单文件可执行程序的库
 pyinstaller
+# 用于彩色终端输出
+colorama

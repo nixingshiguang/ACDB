@@ -1,97 +1,162 @@
-import tkinter as tk
 import os
 import requests
 import ctypes
 import time
-import threading
+import json
+from colorama import init, Fore, Style
 
-# 默认的URL和间隔时间
-url = "https://api.160621.xyz/img/ai/index.php"
-interval = 60
+# 初始化colorama
+init()
 
-# 计数起始值
+# 配置文件路径
+CONFIG_FILE = "acdb_config.json"
+
+# 默认配置
+DEFAULT_CONFIG = {
+    "url": "https://api.160621.xyz/img/ai/index.php",
+    "interval": 60
+}
+
+# 全局变量
+config = DEFAULT_CONFIG.copy()
 count = 1
+running = True
 
+# 加载配置
+def load_config():
+    global config
+    try:
+        if os.path.exists(CONFIG_FILE):
+            with open(CONFIG_FILE, 'r') as f:
+                config = json.load(f)
+            print(f"{Fore.CYAN}[INFO] 已加载配置文件{Style.RESET_ALL}")
+            return True
+        else:
+            print(f"{Fore.YELLOW}[WARN] 配置文件不存在，将使用默认配置{Style.RESET_ALL}")
+            return False
+    except Exception as e:
+        print(f"{Fore.RED}[ERROR] 加载配置失败: {e}{Style.RESET_ALL}")
+        config = DEFAULT_CONFIG.copy()
+        return False
+
+# 保存配置
+def save_config():
+    try:
+        with open(CONFIG_FILE, 'w') as f:
+            json.dump(config, f)
+        print(f"{Fore.GREEN}[SUCCESS] 配置已保存到 {CONFIG_FILE}{Style.RESET_ALL}")
+    except Exception as e:
+        print(f"{Fore.RED}[ERROR] 保存配置失败: {e}{Style.RESET_ALL}")
 
 # 设置壁纸
 def set_wallpaper(image_path):
-    SPI_SETDESKWALLPAPER = 20  # 定义设置桌面壁纸的系统参数标识符
-    # 使用ctypes调用Windows API来设置桌面壁纸
-    ctypes.windll.user32.SystemParametersInfoW(SPI_SETDESKWALLPAPER, 0, image_path, 3)
-
+    try:
+        spi_setdeskwallpaper = 20
+        ctypes.windll.user32.SystemParametersInfoW(spi_setdeskwallpaper, 0, image_path, 3)
+        return True
+    except Exception as e:
+        print(f"{Fore.RED}[ERROR] 设置壁纸失败: {e}{Style.RESET_ALL}")
+        return False
 
 # 下载并设置壁纸
-def download_image(url):
-    global count  # 声明count为全局变量
-    print(f"第{count}次切换壁纸...")
+def download_image(img_url):
+    global count
+    print(f"{Fore.CYAN}[INFO] {Fore.YELLOW}第 {count} 次切换壁纸...{Style.RESET_ALL}")
 
-    # 设置请求头，伪装为浏览器访问
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
-    }
-    # 发送GET请求获取图像
-    response = requests.get(url, headers=headers)
+    try:
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
+        }
+        response = requests.get(img_url, headers=headers, timeout=20)
+        
+        if response.status_code == 200:
+            with open("image.webp", "wb") as f:
+                f.write(response.content)
+            print(f"{Fore.GREEN}[SUCCESS] 下载图片成功！{Style.RESET_ALL}")
+            
+            image_path = os.path.join(os.getcwd(), 'image.webp')
+            print(f"{Fore.CYAN}[INFO] 等待5秒钟准备设置壁纸...{Style.RESET_ALL}")
+            time.sleep(5)
+            
+            if set_wallpaper(image_path):
+                print(f"{Fore.GREEN}[SUCCESS] 壁纸切换成功！{Style.RESET_ALL}")
+                print(f"{Fore.CYAN}[INFO] 下一次切换将在 {config['interval']} 秒后进行{Style.RESET_ALL}")
+                count += 1
+                return True
+            return False
+        else:
+            print(f"{Fore.RED}[ERROR] 下载图片失败，状态码: {response.status_code}{Style.RESET_ALL}")
+            return False
+    except requests.exceptions.RequestException as e:
+        print(f"{Fore.RED}[ERROR] 网络请求异常: {e}{Style.RESET_ALL}")
+        return False
+    except Exception as e:
+        print(f"{Fore.RED}[ERROR] 发生未知错误: {e}{Style.RESET_ALL}")
+        return False
+    finally:
+        print("-" * 50)
 
-    # 检查请求是否成功
-    if response.status_code == 200:
-        # 以二进制方式写入图像数据到本地文件
-        with open("image.webp", "wb") as f:
-            f.write(response.content)
-        print("下载图片成功！")
-    else:
-        # 请求失败，打印状态码
-        print("下载图片失败，状态码:", response.status_code)
+# 获取用户配置
+def get_user_config():
+    global config
+    
+    print(f"{Fore.CYAN}[配置] 请输入图片API URL (默认: {DEFAULT_CONFIG['url']}):{Style.RESET_ALL}")
+    url_input = input().strip()
+    if url_input:
+        config['url'] = url_input
+    
+    while True:
+        print(f"{Fore.CYAN}[配置] 请输入壁纸切换间隔(秒) (默认: {DEFAULT_CONFIG['interval']}):{Style.RESET_ALL}")
+        interval_input = input().strip()
+        
+        if not interval_input:
+            break
+            
+        try:
+            interval = int(interval_input)
+            if interval < 10:
+                print(f"{Fore.YELLOW}[WARN] 间隔时间太短，已设为最小值10秒{Style.RESET_ALL}")
+                interval = 10
+            config['interval'] = interval
+            break
+        except ValueError:
+            print(f"{Fore.RED}[ERROR] 请输入有效的整数{Style.RESET_ALL}")
+    
+    print(f"{Fore.GREEN}[配置] 当前配置:{Style.RESET_ALL}")
+    print(f"  API URL: {config['url']}")
+    print(f"  切换间隔: {config['interval']}秒")
+    
+    save_config()
 
-    # 获取图像文件的完整路径
-    image_path = os.path.join(os.getcwd(), 'image.webp')
-    # 暂停2秒，确保图像文件写入完成
-    time.sleep(2)
-    # 设置图像为桌面壁纸
-    set_wallpaper(image_path)
-    print("切换壁纸成功！")
-    count += 1
+# 主函数
+def main():
+    global running, config
+    
+    print(f"{Fore.CYAN}=" * 50)
+    print(f"{Fore.CYAN}ACDB 壁纸自动更换器 - 控制台版")
+    print(f"=" * 50 + Style.RESET_ALL)
+    
+    # 加载配置，如果配置不存在则获取用户输入
+    if not load_config():
+        get_user_config()
+    
+    print(f"{Fore.GREEN}[INFO] 程序已启动，按 Ctrl+C 停止程序{Style.RESET_ALL}")
+    print(f"{Fore.GREEN}[INFO] 当前配置: URL={config['url']}, 间隔={config['interval']}秒{Style.RESET_ALL}")
+    
+    try:
+        while running:
+            if download_image(config['url']):
+                time.sleep(config['interval'])
+            else:
+                # 如果下载失败，等待较短时间后重试
+                print(f"{Fore.YELLOW}[WARN] 将在30秒后重试...{Style.RESET_ALL}")
+                time.sleep(30)
+    except KeyboardInterrupt:
+        print(f"{Fore.YELLOW}[INFO] 程序已停止{Style.RESET_ALL}")
+    except Exception as e:
+        print(f"{Fore.RED}[ERROR] 程序异常: {e}{Style.RESET_ALL}")
+    finally:
+        print(f"{Fore.CYAN}[INFO] 感谢使用ACDB壁纸自动更换器{Style.RESET_ALL}")
 
-
-# 更换壁纸
-def wallpaper_change():
-    global url, interval
-
-    def wallpaper_changer():
-        while True:  # 不断循环，定期执行下载和设置壁纸的操作
-            download_image(url)  # 下载图片
-            time.sleep(interval)  # 按照设定间隔休眠，单位为秒
-
-    thread = threading.Thread(target=wallpaper_changer)
-    thread.start()
-
-
-wallpaper_change()  # 启动壁纸切换线程
-
-
-# 确认按钮事件
-def on_submit():
-    # 从交互界面获取用户输入的URL和间隔时间
-    global url, interval
-    url = url_entry.get()
-    interval = int(interval_entry.get())
-
-
-# 创建GUI界面
-root = tk.Tk()
-# 标题
-root.title("ACDB 壁纸自动更换器")
-# 图片API_url标签
-url_label = tk.Label(root, text="图片API_URL:")
-url_label.pack()  # 将标签添加到根窗口
-url_entry = tk.Entry(root, width=50)  # 创建输入框，设置宽度为50字符
-url_entry.pack()  # 将输入框添加到根窗口
-# 时间间隔标签
-interval_label = tk.Label(root, text="壁纸切换间隔 (秒):")
-interval_label.pack()
-interval_entry = tk.Entry(root)
-interval_entry.pack()
-# 确认按钮
-submit_button = tk.Button(root, text="确认", command=on_submit)
-submit_button.pack()
-
-root.mainloop()
+if __name__ == "__main__":
+    main()
