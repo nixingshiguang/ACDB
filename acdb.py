@@ -100,13 +100,13 @@ def download_image(img_url):
 def get_user_config():
     global config
     
-    print(f"{Fore.CYAN}[配置] 请输入图片API URL (默认: {DEFAULT_CONFIG['url']}):{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}[配置] 请输入图片API URL (直接回车使用默认: {DEFAULT_CONFIG['url']}):{Style.RESET_ALL}")
     url_input = input().strip()
     if url_input:
         config['url'] = url_input
     
     while True:
-        print(f"{Fore.CYAN}[配置] 请输入壁纸切换间隔(秒) (默认: {DEFAULT_CONFIG['interval']}):{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}[配置] 请输入壁纸切换间隔(秒) (直接回车使用默认: {DEFAULT_CONFIG['interval']}):{Style.RESET_ALL}")
         interval_input = input().strip()
         
         if not interval_input:
@@ -114,9 +114,9 @@ def get_user_config():
             
         try:
             interval = int(interval_input)
-            if interval < 10:
-                print(f"{Fore.YELLOW}[WARN] 间隔时间太短，已设为最小值10秒{Style.RESET_ALL}")
-                interval = 10
+            if interval < 30:
+                print(f"{Fore.YELLOW}[WARN] 间隔时间太短，已设为最小值30秒{Style.RESET_ALL}")
+                interval = 30
             config['interval'] = interval
             break
         except ValueError:
