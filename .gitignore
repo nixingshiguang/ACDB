@@ -1,3 +1,6 @@
 build/
 *.spec
 image.webp
+.idea/
+dist/
+.venv/
