@@ -2,7 +2,7 @@
 ACDB——Automatic Change Desktop Background，即自动更换电脑桌面壁纸
 
 ## 介绍
-+ 此程序为满足我突然的需求制作！
+此程序为满足我突然的需求制作！
 
 ## 功能
 1. 启动程序后，从API下载图片并设置为桌面壁纸
